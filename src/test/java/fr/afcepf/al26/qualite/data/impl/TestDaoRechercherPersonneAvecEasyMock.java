@@ -4,7 +4,9 @@ import fr.afcepf.al26.qualite.data.api.IDaoPersonne;
 import fr.afcepf.al26.qualite.entities.Personne;
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -57,7 +59,7 @@ public class TestDaoRechercherPersonneAvecEasyMock {
     /**
      * identifiant de la personne nominale
      */
-    private static int idPersonneNominale = 5;
+    private static final int idPersonneNominale = 5;
 
     /**
      * Initilisation des Tests
@@ -70,6 +72,8 @@ public class TestDaoRechercherPersonneAvecEasyMock {
             personneNominale = new Personne(idPersonneNominale,
                     "user", "user", "user@afcepf.fr", "user",
                     sdf.parse("21/12/2012"));
+            retourNominal.add(personneNominale);
+            retourAlternatif = new ArrayList<>();
             dao = EasyMock.createMock(IDaoPersonne.class);
             EasyMock.expect(dao.rechercher(nomExiste))
                     .andReturn(retourNominal);
@@ -87,5 +91,38 @@ public class TestDaoRechercherPersonneAvecEasyMock {
     @AfterClass
     public static void finDesTests() {
         EasyMock.verify(dao);
+    }
+
+    /**
+     * Test d'une recherche qui retourne une valeur
+     */
+    @Test
+    public void testRecherchePersonneNominal(){
+        List<Personne> retour= dao.rechercher(nomExiste);
+        Assert.assertNotNull(retour);
+        Assert.assertEquals(tailleListeNominal,retour.size());
+        Personne p = retour.get(0);
+        Assert.assertNotNull(p);
+        Assert.assertNotNull(p.getId());
+        Assert.assertNotNull(p.getNom());
+        Assert.assertNotNull(p.getPrenom());
+        Assert.assertNotNull(p.getMail());
+        Assert.assertNotNull(p.getMdp());
+        Assert.assertNotNull(p.getDateNaissance());
+        Assert.assertEquals(personneNominale.getId(),p.getId());
+        Assert.assertEquals(personneNominale.getNom(),p.getNom());
+        Assert.assertEquals(personneNominale.getPrenom(),p.getPrenom());
+        Assert.assertEquals(personneNominale.getMail(),p.getMail());
+        Assert.assertEquals(personneNominale.getMdp(),p.getMdp());
+        Assert.assertEquals(sdf.format(personneNominale.getDateNaissance()),sdf.format(p.getDateNaissance()));
+    }
+    /**
+     * Test d'une recherche qui ne retourne rien
+     */
+    @Test
+    public void testRecherchePersonneAlternative(){
+        List<Personne> retour = dao.rechercher(nomExistePas);
+        Assert.assertNotNull(retour);
+        Assert.assertEquals(tailleListeAlternative,retour.size());
     }
 }
