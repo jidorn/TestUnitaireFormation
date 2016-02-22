@@ -7,7 +7,12 @@ import fr.afcepf.al26.qualite.util.SocialDataSource;
 import org.apache.log4j.Logger;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -121,7 +126,8 @@ public class DaoPersonne implements IDaoPersonne {
             nb = rs.getInt(indiceCleGenere);
         } catch (SQLException e) {
             e.printStackTrace();
-            se = new SocialException("probleme lors de la verif mail", SocialException.ErrorCode.CA_MARCHE_PAS);
+            se = new SocialException("probleme lors de la verif mail",
+                    SocialException.ErrorCode.CA_MARCHE_PAS);
         }
         if (se != null) {
             try {
