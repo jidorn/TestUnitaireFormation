@@ -1,6 +1,7 @@
 package fr.afcepf.al26.qualite.business.impl;
 
 import fr.afcepf.al26.qualite.business.api.ISocialBusiness;
+import fr.afcepf.al26.qualite.data.api.IDaoPersonne;
 import fr.afcepf.al26.qualite.entities.Personne;
 import fr.afcepf.al26.qualite.exception.SocialException;
 import org.easymock.EasyMock;
@@ -14,6 +15,7 @@ import java.text.SimpleDateFormat;
 
 /**
  * Classe test pour le service de {@link ISocialBusiness}.
+ *
  * @author Stagiaire.
  */
 public class TestBusiness {
@@ -21,6 +23,10 @@ public class TestBusiness {
      * Service a tester.
      */
     private static ISocialBusiness business;
+    /**
+     * couche à mocker
+     */
+    private static IDaoPersonne mockData;
     /**
      * Personne pour le test personne nominal.
      */
@@ -66,21 +72,21 @@ public class TestBusiness {
      * init des tests
      */
     @BeforeClass
-    public  static void init(){
+    public static void init() {
         try {
             personneNominale = new Personne(null,
-                    "user", "user", "user@afcepf.fr", "user",
+                    "user", "user", "usermko@afcepf.fr", "user",
                     sdf.parse("21/12/2012"));
             personneNomNull = new Personne(null,
-                    null, "user", "user@afcepf.fr", "user",
+                    null, "user", "userklm@afcepf.fr", "user",
                     sdf.parse("21/12/2012"));
             personneMailTropLong = new Personne(null,
-                    "user", "user", "user@afcepf.fr", "user",
+                    "user", "user", "userm@afcepf.fr", "user",
                     sdf.parse("21/12/2012"));
             for (int i = 0; i < LAST_ID; i++) {
                 personneMailTropLong.setMail(
                         personneMailTropLong.getMail()
-                        +personneMailTropLong.getMail()
+                                + personneMailTropLong.getMail()
                 );
             }
             personneMailExisteDeja = new Personne(null,
@@ -89,19 +95,26 @@ public class TestBusiness {
             personneRetour = new Personne(LAST_ID,
                     "user", "user", "user@afcepf.fr", "user",
                     sdf.parse("21/12/2012"));
-            business = EasyMock.createMock(ISocialBusiness.class);
-            EasyMock.expect(business.ajouter(personneNominale))
+            business = new SocialBusiness();
+            mockData = EasyMock.createMock(IDaoPersonne.class);
+            EasyMock.expect(mockData.ajouter(personneNominale))
                     .andReturn(personneRetour);
-            EasyMock.expect(business.ajouter(personneNomNull))
+            EasyMock.expect(mockData.ajouter(personneNomNull))
+                    .andThrow(new SocialException("pas bon",
+                            SocialException.ErrorCode.PERSONNE_INCOMPLETE));
+            EasyMock.expect(mockData.ajouter(personneMailTropLong))
                     .andThrow(new SocialException("pas bon",
                             SocialException.ErrorCode.CA_MARCHE_PAS));
-            EasyMock.expect(business.ajouter(personneMailTropLong))
-                    .andThrow(new SocialException("pas bon",
-                            SocialException.ErrorCode.CA_MARCHE_PAS));
-            EasyMock.expect(business.ajouter(personneMailExisteDeja))
-                    .andThrow(new SocialException("pas bon",
-                            SocialException.ErrorCode.CA_MARCHE_PAS));
-            EasyMock.replay(business);
+            EasyMock.expect(mockData.verifMail(personneNominale.getMail()))
+                    .andReturn(false);
+            EasyMock.expect(mockData.verifMail(personneNomNull.getMail()))
+                    .andReturn(false);
+            EasyMock.expect(mockData.verifMail(personneMailTropLong.getMail()))
+                    .andReturn(false);
+            EasyMock.expect(mockData.verifMail(personneMailExisteDeja.getMail()))
+                    .andReturn(true);
+            ((SocialBusiness) business).setDao(mockData);
+            EasyMock.replay(mockData);
         } catch (ParseException | SocialException paramE) {
             paramE.printStackTrace();
         }
@@ -111,12 +124,12 @@ public class TestBusiness {
      * Apres tous les tests
      */
     @AfterClass
-    public static void finDesTest(){
-        EasyMock.verify(business);
+    public static void finDesTest() {
+        EasyMock.verify(mockData);
     }
 
     @Test
-    public void testAjoutNominal(){
+    public void testAjoutNominal() {
         try {
             Personne retour = business.ajouter(personneNominale);
             Assert.assertNotNull(retour);
@@ -126,24 +139,27 @@ public class TestBusiness {
             Assert.assertNotNull(retour.getMdp());
             Assert.assertNotNull(retour.getMail());
             Assert.assertNotNull(retour.getDateNaissance());
-            Assert.assertEquals(LAST_ID,retour.getId().intValue());
-            Assert.assertEquals(personneRetour.getNom(),retour.getNom());
-            Assert.assertEquals(personneRetour.getPrenom(),retour.getPrenom());
-            Assert.assertEquals(personneRetour.getMdp(),retour.getMdp());
-            Assert.assertEquals(personneRetour.getMail(),retour.getMail());
-            Assert.assertEquals(personneRetour.getDateNaissance(),retour.getDateNaissance());
+            Assert.assertEquals(LAST_ID, retour.getId().intValue());
+            Assert.assertEquals(personneRetour.getNom(), retour.getNom());
+            Assert.assertEquals(personneRetour.getPrenom(), retour.getPrenom());
+            Assert.assertEquals(personneRetour.getMdp(), retour.getMdp());
+            Assert.assertEquals(personneRetour.getMail(), retour.getMail());
+            Assert.assertEquals(personneRetour.getDateNaissance(), retour.getDateNaissance());
         } catch (SocialException paramE) {
             Assert.fail("erreur qui ne devrait pas arrive car cas nominal : " + paramE.getMessage());
         }
     }
+
     @Test(expected = SocialException.class)
     public void testAjoutNomNull() throws SocialException {
         Personne retour = business.ajouter(personneNomNull);
     }
+
     @Test(expected = SocialException.class)
     public void testAjoutMailTropLong() throws SocialException {
         Personne retour = business.ajouter(personneMailTropLong);
     }
+
     @Test(expected = SocialException.class)
     public void testAjoutMailExitant() throws SocialException {
         Personne retour = business.ajouter(personneMailExisteDeja);
