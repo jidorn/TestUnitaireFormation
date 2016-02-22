@@ -97,10 +97,10 @@ public class TestDaoRechercherPersonneAvecEasyMock {
      * Test d'une recherche qui retourne une valeur
      */
     @Test
-    public void testRecherchePersonneNominal(){
-        List<Personne> retour= dao.rechercher(nomExiste);
+    public void testRecherchePersonneNominal() {
+        List<Personne> retour = dao.rechercher(nomExiste);
         Assert.assertNotNull(retour);
-        Assert.assertEquals(tailleListeNominal,retour.size());
+        Assert.assertEquals(tailleListeNominal, retour.size());
         Personne p = retour.get(0);
         Assert.assertNotNull(p);
         Assert.assertNotNull(p.getId());
@@ -109,20 +109,21 @@ public class TestDaoRechercherPersonneAvecEasyMock {
         Assert.assertNotNull(p.getMail());
         Assert.assertNotNull(p.getMdp());
         Assert.assertNotNull(p.getDateNaissance());
-        Assert.assertEquals(personneNominale.getId(),p.getId());
-        Assert.assertEquals(personneNominale.getNom(),p.getNom());
-        Assert.assertEquals(personneNominale.getPrenom(),p.getPrenom());
-        Assert.assertEquals(personneNominale.getMail(),p.getMail());
-        Assert.assertEquals(personneNominale.getMdp(),p.getMdp());
-        Assert.assertEquals(sdf.format(personneNominale.getDateNaissance()),sdf.format(p.getDateNaissance()));
+        Assert.assertEquals(personneNominale.getId(), p.getId());
+        Assert.assertEquals(personneNominale.getNom(), p.getNom());
+        Assert.assertEquals(personneNominale.getPrenom(), p.getPrenom());
+        Assert.assertEquals(personneNominale.getMail(), p.getMail());
+        Assert.assertEquals(personneNominale.getMdp(), p.getMdp());
+        Assert.assertEquals(sdf.format(personneNominale.getDateNaissance()), sdf.format(p.getDateNaissance()));
     }
+
     /**
      * Test d'une recherche qui ne retourne rien
      */
     @Test
-    public void testRecherchePersonneAlternative(){
+    public void testRecherchePersonneAlternative() {
         List<Personne> retour = dao.rechercher(nomExistePas);
         Assert.assertNotNull(retour);
-        Assert.assertEquals(tailleListeAlternative,retour.size());
+        Assert.assertEquals(tailleListeAlternative, retour.size());
     }
 }
