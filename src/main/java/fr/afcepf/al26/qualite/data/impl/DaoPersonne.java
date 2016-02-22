@@ -85,12 +85,10 @@ public class DaoPersonne implements IDaoPersonne {
                             .getDateNaissance().getTime()));
             int nb = preparedStatement.executeUpdate();
             log.info("le nombre : " + nb);
-            if (nb == 1) {
-                ResultSet resultSet = preparedStatement.getGeneratedKeys();
-                resultSet.next();
-                int idPers = resultSet.getInt(1);
-                paramPersonne.setId(idPers);
-            }
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            resultSet.next();
+            int idPers = resultSet.getInt(1);
+            paramPersonne.setId(idPers);
         } catch (SQLException paramE) {
             log.debug("erreur lors de l'ajout : " + paramE.getMessage());
             se = new SocialException("erreur lors de l'ajout",
