@@ -2,7 +2,11 @@ package fr.afcepf.al26.qualite.data.impl;
 
 import fr.afcepf.al26.qualite.data.api.IDaoPersonne;
 import fr.afcepf.al26.qualite.entities.Personne;
+import org.easymock.EasyMock;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,28 +18,74 @@ public class TestDaoRechercherPersonneAvecEasyMock {
     /**
      * service a tester
      */
-    private IDaoPersonne dao;
+    private static IDaoPersonne dao;
 
     /**
      * pour la recherche qui retourne une valeur.
      */
-    private String nomExiste;
+    private static String nomExiste;
     /**
      * pour la recherche qui ne retourne rien.
      */
-    private String nomExistePas;
+    private static String nomExistePas;
     /**
      * retour pour la recherche qui retourne une valeur.
      */
-    private List<Personne> retourNominal = new ArrayList<>();
+    private static List<Personne> retourNominal = new ArrayList<>();
     /**
      * retour pour la recherche qui ne retourne rien.
      */
-    private List<Personne> retourAlternatif;
+    private static List<Personne> retourAlternatif;
 
     /**
      * Pour la comparaison de Date.
      */
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    private static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
+    /**
+     * taille de la liste retour nominal.
+     */
+    private static int tailleListeNominal = 1;
+    /**
+     * taille de la liste retour alternative.
+     */
+    private static int tailleListeAlternative = 0;
+    /**
+     * {@link Personne} de la liste nominale.
+     */
+    private static Personne personneNominale;
+    /**
+     * identifiant de la personne nominale
+     */
+    private static int idPersonneNominale = 5;
+
+    /**
+     * Initilisation des Tests
+     */
+    @BeforeClass
+    public static void initialisationDesTest() {
+        try {
+            nomExiste = "user";
+            nomExistePas = "userpasexiste";
+            personneNominale = new Personne(idPersonneNominale,
+                    "user", "user", "user@afcepf.fr", "user",
+                    sdf.parse("21/12/2012"));
+            dao = EasyMock.createMock(IDaoPersonne.class);
+            EasyMock.expect(dao.rechercher(nomExiste))
+                    .andReturn(retourNominal);
+            EasyMock.expect(dao.rechercher(nomExistePas))
+                    .andReturn(retourAlternatif);
+            EasyMock.replay(dao);
+        } catch (ParseException paramE) {
+            paramE.printStackTrace();
+        }
+    }
+
+    /**
+     * Apres tous les tests.
+     */
+    @AfterClass
+    public static void finDesTests() {
+        EasyMock.verify(dao);
+    }
 }
