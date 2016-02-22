@@ -2,7 +2,12 @@ package fr.afcepf.al26.qualite.business.impl;
 
 import fr.afcepf.al26.qualite.business.api.ISocialBusiness;
 import fr.afcepf.al26.qualite.entities.Personne;
+import fr.afcepf.al26.qualite.exception.SocialException;
+import org.easymock.EasyMock;
+import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -84,8 +89,63 @@ public class TestBusiness {
             personneRetour = new Personne(LAST_ID,
                     "user", "user", "user@afcepf.fr", "user",
                     sdf.parse("21/12/2012"));
-        } catch (ParseException paramE) {
+            business = EasyMock.createMock(ISocialBusiness.class);
+            EasyMock.expect(business.ajouter(personneNominale))
+                    .andReturn(personneRetour);
+            EasyMock.expect(business.ajouter(personneNomNull))
+                    .andThrow(new SocialException("pas bon",
+                            SocialException.ErrorCode.CA_MARCHE_PAS));
+            EasyMock.expect(business.ajouter(personneMailTropLong))
+                    .andThrow(new SocialException("pas bon",
+                            SocialException.ErrorCode.CA_MARCHE_PAS));
+            EasyMock.expect(business.ajouter(personneMailExisteDeja))
+                    .andThrow(new SocialException("pas bon",
+                            SocialException.ErrorCode.CA_MARCHE_PAS));
+            EasyMock.replay(business);
+        } catch (ParseException | SocialException paramE) {
             paramE.printStackTrace();
         }
+    }
+
+    /**
+     * Apres tous les tests
+     */
+    @AfterClass
+    public static void finDesTest(){
+        EasyMock.verify(business);
+    }
+
+    @Test
+    public void testAjoutNominal(){
+        try {
+            Personne retour = business.ajouter(personneNominale);
+            Assert.assertNotNull(retour);
+            Assert.assertNotNull(retour.getId());
+            Assert.assertNotNull(retour.getNom());
+            Assert.assertNotNull(retour.getPrenom());
+            Assert.assertNotNull(retour.getMdp());
+            Assert.assertNotNull(retour.getMail());
+            Assert.assertNotNull(retour.getDateNaissance());
+            Assert.assertEquals(LAST_ID,retour.getId().intValue());
+            Assert.assertEquals(personneRetour.getNom(),retour.getNom());
+            Assert.assertEquals(personneRetour.getPrenom(),retour.getPrenom());
+            Assert.assertEquals(personneRetour.getMdp(),retour.getMdp());
+            Assert.assertEquals(personneRetour.getMail(),retour.getMail());
+            Assert.assertEquals(personneRetour.getDateNaissance(),retour.getDateNaissance());
+        } catch (SocialException paramE) {
+            Assert.fail("erreur qui ne devrait pas arrive car cas nominal : " + paramE.getMessage());
+        }
+    }
+    @Test(expected = SocialException.class)
+    public void testAjoutNomNull() throws SocialException {
+        Personne retour = business.ajouter(personneNomNull);
+    }
+    @Test(expected = SocialException.class)
+    public void testAjoutMailTropLong() throws SocialException {
+        Personne retour = business.ajouter(personneMailTropLong);
+    }
+    @Test(expected = SocialException.class)
+    public void testAjoutMailExitant() throws SocialException {
+        Personne retour = business.ajouter(personneMailExisteDeja);
     }
 }
